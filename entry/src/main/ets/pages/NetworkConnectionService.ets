@@ -1,8 +1,9 @@
 import { connection } from '@kit.NetworkKit';
 import { BusinessError } from '@kit.BasicServicesKit';
-import wifi from '@ohos.wifi';
-import bluetooth from '@ohos.bluetooth';
+import { constant, wifiManager } from '@kit.ConnectivityKit';
+import { access } from '@kit.ConnectivityKit';
 import { data } from '@kit.TelephonyKit';
+import { connection as connect }  from '@kit.ConnectivityKit';
 
 export enum ConnectionStatus {
   CONNECTED = 'CONNECTED',
@@ -124,14 +125,9 @@ export class NetworkConnectionService {
         return false;
       }
 
-      for (let cap of capabilities) {
-        if (connection.NetCap.NET_CAPABILITY_VALIDATED === cap) {
-          console.info('[NetworkService] Network is validated and accessible');
-          return true;
-        }
-      }
+      return capabilities.map(cap => connection.NetCap.NET_CAPABILITY_VALIDATED === cap).includes(true);
 
-      console.info('[NetworkService] Network is not validated');
+
       return false;
     } catch (error) {
       let err = error as BusinessError;
@@ -143,8 +139,8 @@ export class NetworkConnectionService {
 
   private checkWifiConnection(): boolean {
     try {
-      const isWifiActive = wifi.isWifiActive();
-      const isConnected = wifi.isConnected();
+      const isWifiActive = wifiManager.isWifiActive();
+      const isConnected = wifiManager.isConnected();
 
       if (isWifiActive && isConnected) {
         console.info('[NetworkService] WiFi is connected');
@@ -185,14 +181,15 @@ export class NetworkConnectionService {
 
   private checkBluetoothConnection(): boolean {
     try {
-      const btState = bluetooth.getState();
+      const btState  = access.getState();
 
       if (btState !== 2) {
         console.info('[NetworkService] Bluetooth is not on, state:', btState);
         return false;
       }
 
-      const btConnectionState = bluetooth.getBtConnectionState();
+      const btConnectionState : connect.ProfileConnectionState =
+        connect.getProfileConnectionState(constant.ProfileId.PROFILE_A2DP_SOURCE);
 
       if (btConnectionState === 2) {
         console.info('[NetworkService] Bluetooth is connected');
@@ -320,7 +317,7 @@ export class NetworkConnectionService {
   public async destroy(): Promise<void> {
     if (this.netConnection) {
       try {
-        await this.netConnection.unregister((error: BusinessError) => {
+        this.netConnection.unregister((error: BusinessError) => {
           if (error) {
             console.error('[NetworkService] Unregister error:', JSON.stringify(error));
           } else {

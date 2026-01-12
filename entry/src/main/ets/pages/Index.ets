@@ -6,13 +6,13 @@ import { ConnectionDetails,
 @Component
 struct Index {
   private networkService: NetworkConnectionService = NetworkConnectionService.getInstance();
-  @State isInitialized: boolean = false;
-  @State connectionType: ConnectionType = ConnectionType.UNKNOWN;
+  private isInitialized: boolean = false;
+  private connectionType: ConnectionType = ConnectionType.UNKNOWN;
   @State connectionStatus: ConnectionStatus = ConnectionStatus.CHECKING;
-  @State connectionMessage: string = 'Checking';
-  @State isNetworkAccessible: boolean = false;
-  @State hasWifi: boolean = false;
-  @State hasCellular: boolean = false;
+  private connectionMessage: string = 'Checking';
+  private isNetworkAccessible: boolean = false;
+  private hasWifi: boolean = false;
+  private hasCellular: boolean = false;
 
   async aboutToAppear() {
     try {
